@@ -4,104 +4,133 @@
 
 ### A
 
-10.0.1.0/24
+Hay 8 Dominios de Broadcast
 
-Comenzamos por la red que necesita 40 hosts, y seguimos para abajo
+Utilizando el bloque 10.0.1.0/24
 
-Se necesitan 6 bits para representar los 40 hosts. Por ende se puede utilizar la red
+Comenzando por la red con mas hosts, necesitamos un total de 43 ips en esa red (40 hosts+R4+Red+Broadcast)
+Puedo utilizar 6 bits de host para identificar los hosts, quedando con 26 bits de mascara
+10.0.1.0/26
+FFFFFFA0
+
+Luego para la red del host C necesitamos un total de 33 ips (30 hosts, R3, Red, Broadcast)
+Por ende vamos a utilizar la siguiente /26
 10.0.1.64/26
 
-En base a las otras redes que sobran, podemos divir en una red para 30 hosts, para la cual tan solo necesitamos 5 bits
-10.0.1.128/27
+Para la red de A necesitamos 13 ips (10 hosts, R1, Red, Broadcast), por lo que podemos utilizar un /28
+10.0.1.128/28
 
-Por ultimo necesitamos una red para 10 hosts, por lo que necesitamos 4 bits
-10.0.1.160/28
+Para las 5 redes restantes puedo utilizar un /30, pues solo necesito 4 ips (Los dos punto a punto, red y broadcast)
+10.0.1.144/30
+10.0.1.148/30
+10.0.1.152/30
+10.0.1.156/30
+10.0.1.160/30
 
-Para el resto de enlaces podemos utilizar redes /30, pues necesitamos un total de 4 ips por conexion punto a punto
-10.0.1.176/30
-10.0.1.180/30
-10.0.1.184/30
-10.0.1.188/30
+Ahora hago la tabla
 
-| Broadcast |   IP red   |   Mascara   | Long Prefijo |
-| :-------: | :--------: | :---------: | :----------: |
-|   A-R1    | 10.0.1.160 | FF.FF.FF.C0 |     /28      |
-|   R1-R0   | 10.0.1.176 | FF.FF.FF.FA |     /30      |
-|   R1-R3   | 10.0.1.180 | FF.FF.FF.FA |     /30      |
-|   R0-R2   | 10.0.1.184 | FF.FF.FF.FA |     /30      |
-|   R3-C    | 10.0.1.128 | FF.FF.FF.B0 |     /27      |
-|   R2-R4   | 10.0.1.188 | FF.FF.FF.FA |     /30      |
-|   R4-B    | 10.0.1.64  | FF.FF.FF.A0 |     /26      |
+| Dominio |    Red     |   Mascara   | Long Prefijo |
+| :-----: | :--------: | :---------: | :----------: |
+|  A-R1   | 10.0.1.128 | FF.FF.FF.F0 |     /28      |
+|  R1-R0  | 10.0.1.144 | FF.FF.FF.FA |     /30      |
+|  R1-R3  | 10.0.1.148 | FF.FF.FF.FA |     /30      |
+|  R0-R2  | 10.0.1.152 | FF.FF.FF.FA |     /30      |
+|  R3-R2  | 10.0.1.156 | FF.FF.FF.FA |     /30      |
+|  R3-C   | 10.0.1.64  | FF.FF.FF.A0 |     /26      |
+|  R2-R4  | 10.0.1.160 | FF.FF.FF.FA |     /30      |
+|  R4-B   |  10.0.1.0  | FF.FF.FF.A0 |     /26      |
 
 ### B
 
-El router R0 deberia tener en su tabla
+Supongamos que eth0 esta a la izquierda y eth1 a la derecha
 
-A-R1 y R1-R3 a la izquierda (Digamos Eth0)
-R2-R3, R3-C, R2-R4, y R4-B a la derecha (Digamos Eth1)
+| Red Destino | Mask |  Next Hop  | Interfaz |
+| :---------: | :--: | :--------: | :------: |
+|  10.0.1.0   | /26  | 10.0.1.154 |   eth1   |
+|  10.0.1.64  | /26  | 10.0.1.145 |   eth0   |
+| 10.0.1.128  | /28  | 10.0.1.145 |   eth0   |
+| 10.0.1.144  | /30  |     --     |   eth0   |
+| 10.0.1.152  | /30  |     --     |   eth1   |
+| 10.0.1.148  | /30  | 10.0.1.145 |   eth0   |
+| 10.0.1.156  | /30  | 10.0.1.154 |   eth1   |
+| 10.0.1.160  | /30  | 10.0.1.154 |   eth1   |
 
 ### C
 
-B puede tener su default gateway hacia el R4 y nada mas, todos los paquetes saldrian para ese lado y luego los routers se encargaran de rutearlo
+| Red Destino | Mask | Next Hop | Interfaz |
+| :---------: | :--: | :------: | :------: |
+|   0.0.0.0   |  /0  | 10.0.1.1 |   eth0   |
 
 ## Ejercicio 2
 
 2001:db8:1::/48
 
-FFFF:FFFF:FFFF::
-FFFF:FFFF:FFFF:FFFF::
+Debido a la gran cantidad de IPs de IPv6, voy a utilizar un /64 que nos permite generar muchas redes con millones de hosts
+La red que utilizaria seria 2001:db8:1::/64, con los dos dispositivos teniendo las siguientes ips
 
-Utilizaremos /64 debido a que es el estandar para subnetting en IPv6, puesto que nos da muchas subredes y hosts
-Utilizare la red 2001:db8:1:1::/64
-
-El R1 puede ser 2001:db8:1:1::1 y el R3 2001:db8:1:1::2
+R1=2001:db8:1::1
+R3=2001:db8:1::2
 
 ## Ejercicio 3
 
+MSS=1400B
+
 ### A
 
-A
+El objetivo de Control de Flujo es no inundar al servidor de peticiones, mientras que el objetivo de Control de Congestion es evitar congestionar la red en si.
 
 ### B
 
-B
+Control de congestion domina entre T=1 y T=33, mientras que Control de congestion domina entre T=33 y T=39
 
 ### C
 
-C
+En T=3 Se encuentra en Slow Start, pues esta creciendo exponencialmente, se trata de una fase de control de congestion
+
+En T=27 se encuentra en Congestion Avoidance, pues esta creciendo linealmente. Tambien se trata de una fase de control de congestion
 
 ### D
 
-D
+Como se puede ver, en T=4 (CWND=8) pasa de slow start a Congestion Avoidance, es decir, que el ssthresh es 8, y tanto viendo la figura como contando nosotros mismos, podemos obtener que para T=6 el CWND es 10.
 
 ### E
 
-E
+En T=12 detecta un triple ACK, ante lo cual realiza fast recovery, quedando el ssthresh a la mitad del CWND maximo alcanzado, en este caso 15/2=7.5->8, y asigna CWND a este mismo ssthresh
+
+T=19 detecta un timeout, lo cual se puede ver ya que pasa de 15 a 1 en un instante. Hace la misma cuenta para el ssthresh, este quedando en 8 otra vez, pero el CWND vuelvea hacer slow start desde 1
 
 ### F
 
-F
+Como el MSS=1400B, y en el tramo final es una recta plana con cwnd=18, la ventana que debe devolver es
+Window=18x1400=25200. Como se puede ver, el valor entra en el limite de 16 bits, por lo que no es necesario el escalado
 
 ## Ejercicio 4
 
 ### A
 
-Busca los Mail Exchangers de gmail.com
-Se hizo una consulta del registro MX al dominio gmail.com de forma recursiva, pues se puede ver como en las flags esta la flag de RD y RA (Recursive desired y Recursive available)
+El cliente consulto por los Mail Exchangers de gmail.com
+
+El tipo de registro es MX
+El registro que consulta es gmail.com
+Y lo hace de forma recursiva, pues se ve en las flags tanto rd(Recursion Desired) y ra(Recursion Available)
 
 ### B
 
-Se utilizo UDP en el puerto 53 al servidor 8.8.8.8, como se puede ver abajo del todo donde dice SERVER
+Realizo la consulta al servidor 8.8.8.8 utilizando UDP en el puerto 53, tal como se ve en la seccion SERVER
 
 ### C
 
-Deberia consultar por el registro A o AAAA del registro del MX de mayor prioridad
+Debe consultar la direccion IP (tipo A) del registro gmail-smtp-in.1.google.com?
 
 ### D
 
-Utilizara TCP en el puerto 25 (Default de SMTP)
+Utiliza el protocolo TCP en el puerto 25 (Default de SMTP)
 
 ### E
 
-Podria mandar un Reset de la conexion TCP, un Timeout (no responde) o un codigo SMTP 421 y el servidor SMTP deberia o probar con otro mail exchanger o descartar el correo
+Puede rechazar la conexion de 3 formas
+
+Mandar un RESET de la conexion TCP
+No responder y mandar un timeout
+Codigo SMTP 521
 
